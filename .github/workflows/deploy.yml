@@ -1,4 +1,4 @@
-# Publica na AWS (ECS Fargate) a cada envio para a main, depois que o CI passar.
+# Publica na AWS (ECS Fargate) a cada envio para a main, depois que o CI passar. Fica parado enquanto AWS_ROLE_ARN não estiver preenchida.
 # Autentica por OIDC: nenhuma chave da AWS fica guardada no GitHub.
 # Variáveis do repositório (Settings > Secrets and variables > Actions > Variables):
 #   AWS_REGION=sa-east-1, AWS_ROLE_ARN, ECR_REPOSITORY=belezando, ECS_CLUSTER, ECS_SERVICE
@@ -16,7 +16,7 @@ permissions:
 concurrency: { group: deploy, cancel-in-progress: false }
 jobs:
   publicar:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ vars.AWS_ROLE_ARN != '' && (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
