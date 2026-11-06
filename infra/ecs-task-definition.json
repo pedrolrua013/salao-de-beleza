@@ -1,0 +1,39 @@
+{
+  "family": "belezando",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": { "cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX" },
+  "executionRoleArn": "arn:aws:iam::CONTA:role/belezando-execucao",
+  "taskRoleArn": "arn:aws:iam::CONTA:role/belezando-tarefa",
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "IMAGEM_SUBSTITUIDA_PELO_DEPLOY",
+      "essential": true,
+      "portMappings": [{ "containerPort": 3000, "protocol": "tcp" }],
+      "environment": [
+        { "name": "NEXT_PUBLIC_SUPABASE_URL", "value": "https://SEU-PROJETO.supabase.co" },
+        { "name": "WHATSAPP_API_VERSION", "value": "v23.0" },
+        { "name": "IP_CABECALHO", "value": "cf-connecting-ip" }
+      ],
+      "secrets": [
+        { "name": "SUPABASE_SERVICE_ROLE_KEY", "valueFrom": "arn:aws:secretsmanager:sa-east-1:CONTA:secret:belezando/SUPABASE_SERVICE_ROLE_KEY" },
+        { "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY", "valueFrom": "arn:aws:secretsmanager:sa-east-1:CONTA:secret:belezando/NEXT_PUBLIC_SUPABASE_ANON_KEY" },
+        { "name": "META_APP_SECRET", "valueFrom": "arn:aws:secretsmanager:sa-east-1:CONTA:secret:belezando/META_APP_SECRET" },
+        { "name": "WHATSAPP_VERIFY_TOKEN", "valueFrom": "arn:aws:secretsmanager:sa-east-1:CONTA:secret:belezando/WHATSAPP_VERIFY_TOKEN" },
+        { "name": "CRON_SECRET", "valueFrom": "arn:aws:secretsmanager:sa-east-1:CONTA:secret:belezando/CRON_SECRET" }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/api/saude').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""],
+        "interval": 30, "timeout": 5, "retries": 3, "startPeriod": 20
+      },
+      "readonlyRootFilesystem": false,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": { "awslogs-group": "/ecs/belezando", "awslogs-region": "sa-east-1", "awslogs-stream-prefix": "app" }
+      }
+    }
+  ]
+}
