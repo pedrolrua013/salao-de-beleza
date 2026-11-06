@@ -6,7 +6,7 @@ PGBIN="${PGBIN:-$(ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1)}"
 DIR="$(mktemp -d)"; PORT="${PGPORT:-54329}"
 chown -R postgres "$DIR" 2>/dev/null || true
 RUN="su postgres -c"; [ "$(id -u)" != 0 ] && RUN="bash -c"
-$RUN "$PGBIN/initdb -D $DIR/data -A trust >/dev/null"
+$RUN "$PGBIN/initdb -D $DIR/data -A trust -U postgres >/dev/null"
 $RUN "$PGBIN/pg_ctl -D $DIR/data -o '-p $PORT -k $DIR' -l $DIR/log -w start >/dev/null"
 trap "$RUN \"$PGBIN/pg_ctl -D $DIR/data -m immediate stop >/dev/null\"; rm -rf $DIR" EXIT
 export PGHOST="$DIR" PGPORT="$PORT" PGUSER=postgres PGOPTIONS='-c search_path=public,extensions -c client_min_messages=notice'
